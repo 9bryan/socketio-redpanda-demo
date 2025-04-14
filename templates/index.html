@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kafka Realtime Messaging</title>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Kafka Realtime Bridge</h1>
+
+  <section style="margin-bottom: 2rem;">
+    <h2>🔔 Receiving from Topic: <code>receive-topic</code></h2>
+    <ul id="messages" style="list-style-type: none; padding-left: 0;"></ul>
+  </section>
+
+  <section>
+    <h2>✉️ Send to Topic: <code>send-topic</code></h2>
+    <label for="msgInput">Message (plain text):</label><br>
+    <textarea id="msgInput" rows="4" cols="60" placeholder='Type something here...'></textarea><br>
+    <button onclick="sendMessage()">Send</button>
+    <p id="sendStatus"></p>
+  </section>
+
+  <script>
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log("✅ Connected to Flask-SocketIO server");
+    });
+
+    // Display incoming messages
+    socket.on('kafka_message', (data) => {
+      const li = document.createElement("li");
+      li.textContent = data;
+      document.getElementById("messages").appendChild(li);
+    });
+
+    function sendMessage() {
+      const input = document.getElementById("msgInput");
+      const msg = input.value.trim();
+      const status = document.getElementById("sendStatus");
+
+      if (msg === "") {
+        status.textContent = "❌ Message is empty.";
+        return;
+      }
+
+      socket.emit('send_to_kafka', msg);
+      status.textContent = "✅ Message sent.";
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
